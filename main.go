@@ -406,7 +406,7 @@ func main() {
 
 	// 启动服务器，通过 stdio 传输
 	log.Println("Starting Git Commit MCP Server...")
-	if err := server.Run(context.Background(), &mcp.StreamableServerTransport{}); err != nil {
+	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		log.Fatal(err)
 	}
 }
