@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"context"
@@ -88,8 +88,8 @@ type VercelResponse struct {
 	StatusCode int               `json:"statusCode"`
 }
 
-// APIHandler Vercel API Route handler
-func APIHandler(w http.ResponseWriter, r *http.Request) {
+// Handler Vercel API Route handler
+func Handler(w http.ResponseWriter, r *http.Request) {
 	// 设置 CORS 头
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -124,18 +124,17 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		jsonBytes, _ := json.Marshal(response)
-		w.Write(jsonBytes)
+		if _, err := w.Write(jsonBytes); err != nil {
+			log.Printf("Failed to write response: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
 	// 处理 MCP 请求
 	handler := VercelHandler()
 	handler.ServeHTTP(w, r)
-}
-
-// 为了兼容 Vercel 的 serverless 函数，可以导出这个函数
-func Handler(w http.ResponseWriter, r *http.Request) {
-	APIHandler(w, r)
 }
 
 // 提交类型定义
