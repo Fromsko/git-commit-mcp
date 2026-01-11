@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -89,6 +90,45 @@ type VercelResponse struct {
 
 // APIHandler Vercel API Route handler
 func APIHandler(w http.ResponseWriter, r *http.Request) {
+	// 设置 CORS 头
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// 处理根路由
+	if r.URL.Path == "/" {
+		// 返回 API 信息
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{
+			"name":        "git-commit-mcp",
+			"version":     "v1.0.0",
+			"description": "Git Commit MCP Server - 基于 Model Context Protocol 的 Git 操作服务器",
+			"endpoints": map[string]string{
+				"mcp":    "/api/mcp",
+				"health": "/",
+			},
+			"tools": []string{
+				"git_status",
+				"generate_commit_message",
+				"git_commit",
+				"list_commit_types",
+				"git_log",
+				"git_branch",
+			},
+			"status": "healthy",
+		}
+
+		jsonBytes, _ := json.Marshal(response)
+		w.Write(jsonBytes)
+		return
+	}
+
+	// 处理 MCP 请求
 	handler := VercelHandler()
 	handler.ServeHTTP(w, r)
 }
